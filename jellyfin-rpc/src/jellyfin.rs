@@ -15,7 +15,9 @@ impl RawSession {
         let now_playing_item = self.now_playing_item.clone().unwrap();
 
         let id = match now_playing_item.media_type {
-            MediaType::Episode => now_playing_item.series_id.unwrap_or(now_playing_item.id),
+            MediaType::Episode => now_playing_item.season_id.unwrap_or(
+                now_playing_item.series_id.unwrap_or(now_playing_item.id)
+            ),
             MediaType::Music => now_playing_item.album_id.unwrap_or(now_playing_item.id),
             _ => now_playing_item.id,
         };
@@ -180,6 +182,7 @@ pub struct NowPlayingItem {
     pub index_number_end: Option<i32>,
     pub series_name: Option<String>,
     pub series_id: Option<String>,
+    pub season_id: Option<String>,
     // Audio related
     pub artists: Option<Vec<String>>,
     pub extra_type: Option<String>,
