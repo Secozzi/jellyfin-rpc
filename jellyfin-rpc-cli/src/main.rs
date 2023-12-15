@@ -219,7 +219,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             {
                 content.image_url = Imgur::get(
                     &content.image_url,
-                    &content.item_id,
+                    &content.season_id.unwrap_or(content.item_id),
                     &config
                         .clone()
                         .imgur
