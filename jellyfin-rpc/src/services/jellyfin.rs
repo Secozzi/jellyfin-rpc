@@ -12,6 +12,7 @@ struct ContentBuilder {
     endtime: Option<i64>,
     image_url: String,
     item_id: String,
+    season_id: Option<String>,
     external_services: Vec<ExternalServices>,
 }
 
@@ -44,6 +45,10 @@ impl ContentBuilder {
         self.item_id = item_id;
     }
 
+    fn season_id(&mut self, season_id: Option<String>) {
+        self.season_id = season_id;
+    }
+
     fn external_services(&mut self, external_services: Vec<ExternalServices>) {
         self.external_services = external_services;
     }
@@ -56,6 +61,7 @@ impl ContentBuilder {
             endtime: self.endtime,
             image_url: self.image_url,
             item_id: self.item_id,
+            season_id: self.season_id,
             external_services: self.external_services,
         }
     }
@@ -81,6 +87,8 @@ pub struct Content {
     /// Item ID of the content currently playing,
     /// used to store Imgur URLs so that they can be reused instead of reuploading to Imgur every time.
     pub item_id: String,
+    /// Season ID of the content currently playing
+    pub season_id: Option<String>,
     /// External services to display as buttons.
     ///
     /// Example: IMDb, Trakt, etc.
@@ -172,6 +180,7 @@ impl Content {
             }
 
             let mut image_url: String = "".to_string();
+
             if config
                 .images
                 .as_ref()
@@ -180,7 +189,7 @@ impl Content {
             {
                 image_url = Content::image(
                     &config.jellyfin.url,
-                    content.item_id.clone(),
+                    content.season_id.clone().unwrap_or(content.item_id.clone()),
                     config.jellyfin.self_signed_cert.unwrap_or(false),
                 )
                 .await
@@ -236,6 +245,10 @@ impl Content {
             content.details(now_playing_item["SeriesName"].as_str()?.to_string());
             content.state_message(state);
             content.item_id(now_playing_item["SeriesId"].as_str()?.to_string());
+
+            if now_playing_item.get("SeasonId").is_some() {
+                content.season_id(Some(now_playing_item["SeasonId"].as_str()?.to_string()))
+            }
         } else if now_playing_item["Type"].as_str()? == "Movie" {
             let genres = Content::get_genres(now_playing_item).unwrap_or(String::from(""));
 
