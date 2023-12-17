@@ -3,6 +3,7 @@ use crate::core::error::ContentError;
 use async_recursion::async_recursion;
 use serde::{de::Visitor, Deserialize, Serialize};
 use serde_json::Value;
+use regex::Regex;
 
 #[derive(Default, Clone)]
 struct ContentBuilder {
@@ -240,9 +241,14 @@ impl Content {
                 state += &("-".to_string() + &now_playing_item["IndexNumberEnd"].to_string());
             }
 
+            let season_name = now_playing_item["SeasonName"].as_str()?.to_string();
+            let season_pattern = r"^\d+\. ";
+            let season_regex = Regex::new(season_pattern).unwrap();
+            let new_season_name = season_regex.replace(&season_name, "").to_string();
+
             state += &(" ".to_string() + name);
             content.media_type(MediaType::Episode);
-            content.details(now_playing_item["SeriesName"].as_str()?.to_string());
+            content.details(new_season_name);
             content.state_message(state);
             content.item_id(now_playing_item["SeriesId"].as_str()?.to_string());
 
@@ -251,9 +257,10 @@ impl Content {
             }
         } else if now_playing_item["Type"].as_str()? == "Movie" {
             let genres = Content::get_genres(now_playing_item).unwrap_or(String::from(""));
+            let orig_name = now_playing_item["OriginalTitle"].as_str()?;
 
             content.media_type(MediaType::Movie);
-            content.details(name.into());
+            content.details(orig_name.into());
             content.state_message(genres);
             content.item_id(now_playing_item["Id"].as_str()?.to_string());
         } else if now_playing_item["Type"].as_str()? == "Audio" {
