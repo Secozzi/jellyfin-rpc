@@ -42,7 +42,7 @@ impl Session {
         match self.now_playing_item.media_type {
             MediaType::Episode => self
                 .now_playing_item
-                .series_name
+                .season_name
                 .as_ref()
                 .unwrap_or(&self.now_playing_item.name),
             MediaType::AudioBook => self
@@ -183,6 +183,7 @@ pub struct NowPlayingItem {
     pub series_name: Option<String>,
     pub series_id: Option<String>,
     pub season_id: Option<String>,
+    pub season_name: Option<String>,
     // Audio related
     pub artists: Option<Vec<String>>,
     pub extra_type: Option<String>,
